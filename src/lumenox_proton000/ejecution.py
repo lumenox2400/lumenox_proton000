@@ -867,6 +867,8 @@ class LumeProton000:
 
     # 05. Orquestador / Run function
     def run(self):
+        start_time = time.time()
+
         # Read Google Sheet to get users
         self.username_chosen, self.password_chosen = self.read_drive()
 
@@ -918,6 +920,16 @@ class LumeProton000:
             # In case of having successfully rescheduled
             if self.reschedule_success and self.user_problem != None:
                 self.send_email_notification(scenery=2)
+
+        # Tiempo de ejecución y espera condicional
+        elapsed = time.time() - start_time
+        if elapsed < 300:  # menos de 5 minutos
+            wait_min = random.randint(1, 5)
+            wait_sec = wait_min * 60
+            print(f"Runtime {elapsed:.1f}s < 300s — esperando aleatorio de {wait_min} min ({wait_sec}s).")
+            time.sleep(wait_sec)
+        else:
+            print(f"Runtime {elapsed:.1f}s >= 300s — sin espera adicional.")
 
 
 if __name__ == "__main__":
