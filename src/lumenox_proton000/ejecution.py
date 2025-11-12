@@ -351,6 +351,8 @@ class LumeProton000:
             df_filtered = df_dates_norm.loc[~df_dates_norm["is_disabled"]].copy()
 
             if not df_filtered.empty:
+                print("Mostrar head citas...")
+                print(df_filtered.head())
                 idx = 1 if len(df_filtered) >= 2 else 0
                 date_str = df_filtered.iloc[idx][["day", "month", "year"]].astype(str).str.cat(sep=" ")
                 filtered_date = datetime.strptime(date_str, "%d %B %Y")
@@ -517,6 +519,8 @@ class LumeProton000:
                             return self.final_msj
 
                         # Normalize date columns
+                        print("Mostrar head biometricos...")
+                        print(df_filtered_bios.head())
                         df_filtered["date"] = self.to_date(df_filtered, "day", "month", "year")
                         df_filtered_bios["date"] = self.to_date(df_filtered_bios, "day", "month", "year")
 
@@ -763,15 +767,19 @@ class LumeProton000:
     # Auxiliary function to convert to date
     def to_date(self, df, day_col, month_col, year_col):
         date_str = df[[day_col, month_col, year_col]].astype(str).agg(" ".join, axis=1)
-        
-        # Try first in English, then Spanish
-        dates = pd.to_datetime(date_str, format="%d %B %Y", errors="coerce")
-        if dates.isna().any():
-            dates = pd.to_datetime(date_str, format="%d %b %Y", errors="coerce")  # abreviado
-        if dates.isna().any():
-            self.final_msj = f"{self.final_msj} | Error al convertir fechas"
+
+        try:
+            dates = pd.to_datetime(date_str, format="%d %B %Y", errors="coerce")
+            if dates.isna().any():
+                dates = pd.to_datetime(date_str, format="%d %b %Y", errors="coerce")
+            if dates.isna().any():
+                self.final_msj = f"{self.final_msj} | Error al convertir algunas fechas"
+                return None
+            return dates
+
+        except Exception as e:
+            self.final_msj = f"{self.final_msj} | Excepción al convertir fechas: {e}"
             return None
-        return dates
 
 
     # 03. Auxiliary function to loop through and identify selectables
