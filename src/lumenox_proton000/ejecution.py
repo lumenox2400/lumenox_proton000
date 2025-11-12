@@ -22,7 +22,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 
-class LumeProton00:
+class LumeProton000:
     # 00. Initialize variables
     def __init__(self, config, api_drive):
 
@@ -872,12 +872,12 @@ class LumeProton00:
                 str(self.today),
                 str(pd.Timestamp.now()),
                 self.username_chosen,
-                str(self.appointment_date),
-                str(self.appointment_date_new),
-                str(self.appointment_hour_new),
-                str(self.biometrics_date_new),
-                str(self.biometrics_hour_new),
-                self.reschedule_success,
+                None,
+                None,
+                None,
+                None,
+                None,
+                False,
                 self.final_msj
             ]
             self.sheet_log = self.spreadsheet.worksheet("log")
@@ -943,5 +943,5 @@ if __name__ == "__main__":
     }
 
     # Create an instance of the class and run it
-    checker = LumeProton00(config, api_drive)
+    checker = LumeProton000(config, api_drive)
     checker.run()
