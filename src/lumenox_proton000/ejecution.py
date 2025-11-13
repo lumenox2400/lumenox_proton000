@@ -532,8 +532,9 @@ class LumeProton000:
                         ).drop("key", axis=1)
 
                         # Filter the combinations that are less than or equal to 2 days
-                        df_combos["diff_days"] = (df_combos["date_int"] - df_combos["date_bio"]).dt.days
-                        df_combos_ok = df_combos.loc[df_combos["diff_days"] <= 2].copy()
+                        df_combos["diff_days"] = (df_combos["date_bio"] - df_combos["date_int"])
+                        df_combos_ok = df_combos.loc[(df_combos["diff_days"] <= pd.Timedelta(days=2)) &
+                                                        (df_combos["diff_days"] >= pd.Timedelta(days=0))].copy()
 
                         # Order the closest ones first
                         df_combos_ok = df_combos_ok.sort_values(["date_int", "date_bio"]).reset_index(drop=True)
@@ -766,16 +767,21 @@ class LumeProton000:
 
     # Auxiliary function to convert to date
     def to_date(self, df, day_col, month_col, year_col):
-        date_str = df[[day_col, month_col, year_col]].astype(str).agg(" ".join, axis=1)
+        months_dict = {
+            'January': '01', 'February': '02', 'March': '03', 'April': '04',
+            'May': '05', 'June': '06', 'July': '07', 'August': '08',
+            'September': '09', 'October': '10', 'November': '11', 'December': '12'
+        }
 
         try:
-            dates = pd.to_datetime(date_str, format="%d %B %Y", errors="coerce")
-            if dates.isna().any():
-                dates = pd.to_datetime(date_str, format="%d %b %Y", errors="coerce")
+            months_mapped = df[month_col].str.strip().map(months_dict)
+            date_str = df[year_col].astype(str) + '-' + months_mapped + '-' + df[day_col].astype(str).str.zfill(2)
+            dates = pd.to_datetime(date_str, format="%Y-%m-%d", errors="coerce")
+            
             if dates.isna().any():
                 self.final_msj = f"{self.final_msj} | Error al convertir algunas fechas"
                 return None
-            return dates
+            return dates.dt.date
 
         except Exception as e:
             self.final_msj = f"{self.final_msj} | Excepción al convertir fechas: {e}"
